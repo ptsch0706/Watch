@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .add-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .type-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        .items-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .item:hover {
+            border-color: #2196F3;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-movie {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .badge-show {
+            background: #a29bfe;
+            color: #6c5ce7;
+        }
+
+        .service-badge {
+            background: #81ecec;
+            color: #00b894;
+        }
+
+        .delete-btn {
+            padding: 8px 16px;
+            background: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #d63031;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Watch List</h1>
+        
+        <div class="add-section">
+            <div class="type-selector">
+                <button class="type-btn active" data-type="movie">Movie</button>
+                <button class="type-btn" data-type="show">TV Show</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="Enter movie or show name">
+            </div>
+            
+            <div class="form-group">
+                <label for="service">Streaming Service</label>
+                <select id="service">
+                    <option value="Netflix">Netflix</option>
+                    <option value="Disney+">Disney+</option>
+                    <option value="Amazon Prime">Amazon Prime</option>
+                    <option value="Hulu">Hulu</option>
+                    <option value="HBO Max">HBO Max</option>
+                    <option value="Apple TV+">Apple TV+</option>
+                    <option value="Paramount+">Paramount+</option>
+                    <option value="Peacock">Peacock</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <button class="add-btn" onclick="addItem()">Add to Watchlist</button>
+        </div>
+        
+        <div class="items-section">
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="movie">Movies</button>
+                <button class="filter-btn" data-filter="show">TV Shows</button>
+            </div>
+            
+            <div id="itemsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentType = 'movie';
+        let currentFilter = 'all';
+        let items = [];
+
+        // Load items from storage on startup
+        async function loadItems() {
+            try {
+                const result = await window.storage.get('watchlist-items');
+                if (result && result.value) {
+                    items = JSON.parse(result.value);
+                    renderItems();
+                }
+            } catch (error) {
+                console.log('No saved items yet');
+            }
+        }
+
+        // Save items to storage
+        async function saveItems() {
+            try {
+                await window.storage.set('watchlist-items', JSON.stringify(items));
+            } catch (error) {
+                console.error('Error saving items:', error);
+            }
+        }
+
+        // Type selector
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentType = this.dataset.type;
+            });
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderItems();
+            });
+        });
+
+        // Add item
+        async function addItem() {
+            const title = document.getElementById('title').value.trim();
+            const service = document.getElementById('service').value;
+            
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+            
+            const newItem = {
+                id: Date.now(),
+                title: title,
+                type: currentType,
+                service: service,
+                addedDate: new Date().toISOString()
+            };
+            
+            items.unshift(newItem);
+            await saveItems();
+            renderItems();
+            
+            // Clear form
+            document.getElementById('title').value = '';
+        }
+
+        // Delete item
+        async function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            await saveItems();
+            renderItems();
+        }
+
+        // Render items
+        function renderItems() {
+            const itemsList = document.getElementById('itemsList');
+            
+            let filteredItems = items;
+            if (currentFilter !== 'all') {
+                filteredItems = items.filter(item => item.type === currentFilter);
+            }
+            
+            if (filteredItems.length === 0) {
+                itemsList.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                        </svg>
+                        <p>No items in your watchlist yet.<br>Add some movies or shows to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            itemsList.innerHTML = filteredItems.map(item => `
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-meta">
+                            <span class="badge ${item.type === 'movie' ? 'badge-movie' : 'badge-show'}">
+                                ${item.type === 'movie' ? '🎬 Movie' : '📺 TV Show'}
+                            </span>
+                            <span class="service-badge">${item.service}</span>
+                        </div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem(${item.id})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Allow Enter key to add item
+        document.getElementById('title').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Load items when page loads
+        loadItems();
+    </script>
+</body>
+</html>
