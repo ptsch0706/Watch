@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch List</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .add-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .type-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        .items-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .export-timer {
+            font-size: 12px;
+            color: #666;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .export-timer.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #45a049;
+        }
+
+        .import-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .import-btn:hover {
+            background: #1976D2;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            gap: 8px;
+            cursor: move;
+        }
+
+        .item:hover {
+            border-color: #2196F3;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+        }
+
+        .item.dragging {
+            opacity: 0.5;
+            border-color: #2196F3;
+        }
+
+        .drag-handle {
+            color: #999;
+            font-size: 18px;
+            cursor: grab;
+            user-select: none;
+            padding-right: 8px;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .item-status {
+            margin-top: 4px;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-bottom {
+            display: flex;
+            gap: 6px;
+            padding-top: 4px;
+            justify-content: flex-start;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .search-btn {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            padding: 0;
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        .search-btn.wikipedia {
+            color: #000;
+        }
+
+        .search-btn.imdb {
+            color: #f5c518;
+            background: #000;
+            border-color: #000;
+        }
+
+        .search-btn.imdb:hover {
+            background: #1a1a1a;
+        }
+
+        .item-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            word-wrap: break-word;
+            flex: 1;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-movie {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .badge-show {
+            background: #a29bfe;
+            color: #6c5ce7;
+        }
+
+        .service-badge {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .status-badge:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .status-not-started {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .status-in-progress {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .delete-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            padding: 0;
+            background: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .delete-btn:hover {
+            background: #d63031;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Watch List</h1>
+        
+        <div class="add-section">
+            <div class="type-selector">
+                <button class="type-btn active" data-type="movie">Movie</button>
+                <button class="type-btn" data-type="show">TV Show</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="Enter movie or show name">
+            </div>
+            
+            <div class="form-group">
+                <label for="service">Streaming Service</label>
+                <select id="service">
+                    <option value="Netflix">Netflix</option>
+                    <option value="Disney+">Disney+</option>
+                    <option value="Amazon Prime">Amazon Prime</option>
+                    <option value="Hulu">Hulu</option>
+                    <option value="HBO Max">HBO Max</option>
+                    <option value="Apple TV+">Apple TV+</option>
+                    <option value="Paramount+">Paramount+</option>
+                    <option value="Peacock">Peacock</option>
+                    <option value="YouTube TV">YouTube TV</option>
+                    <option value="PBS">PBS</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <button class="add-btn" onclick="addItem()">Add to Watchlist</button>
+        </div>
+        
+        <div class="items-section">
+            <div class="section-header">
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="movie">Movies</button>
+                    <button class="filter-btn" data-filter="show">TV Shows</button>
+                </div>
+                <div id="exportTimer" class="export-timer"></div>
+                <div class="button-group">
+                    <input type="file" id="importFile" accept=".txt" onchange="importWatchlist(event)">
+                    <button class="import-btn" onclick="document.getElementById('importFile').click()">Import List</button>
+                    <button class="export-btn" onclick="exportWatchlist()">Export List</button>
+                </div>
+            </div>
+            
+            <div id="itemsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentType = 'movie';
+        let currentFilter = 'all';
+        let items = [];
+
+        // Load items from storage on startup
+        function loadItems() {
+            try {
+                const saved = localStorage.getItem('watchlist-items');
+                if (saved) {
+                    items = JSON.parse(saved);
+                    renderItems();
+                }
+            } catch (error) {
+                console.log('No saved items yet');
+            }
+            updateExportTimer();
+        }
+
+        // Save items to storage
+        function saveItems() {
+            try {
+                localStorage.setItem('watchlist-items', JSON.stringify(items));
+            } catch (error) {
+                console.error('Error saving items:', error);
+            }
+        }
+
+        // Update export timer display
+        function updateExportTimer() {
+            const lastExport = localStorage.getItem('last-export-time');
+            const timerEl = document.getElementById('exportTimer');
+            
+            if (!lastExport) {
+                timerEl.innerHTML = '⚠️ Never exported';
+                timerEl.classList.add('warning');
+                return;
+            }
+            
+            const lastExportDate = new Date(lastExport);
+            const now = new Date();
+            const diffMs = now - lastExportDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let timeText = '';
+            if (diffDays > 0) {
+                timeText = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } else if (diffHours > 0) {
+                timeText = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffMins > 0) {
+                timeText = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            } else {
+                timeText = 'Just now';
+            }
+            
+            timerEl.innerHTML = `📁 Last export: ${timeText}`;
+            
+            // Add warning style if more than 7 days
+            if (diffDays >= 7) {
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.remove('warning');
+            }
+        }
+
+        // Type selector
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentType = this.dataset.type;
+            });
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderItems();
+            });
+        });
+
+        // Add item
+        function addItem() {
+            const title = document.getElementById('title').value.trim();
+            const service = document.getElementById('service').value;
+            
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+            
+            const newItem = {
+                id: Date.now(),
+                title: title,
+                type: currentType,
+                service: service,
+                status: 'not-started',
+                addedDate: new Date().toISOString()
+            };
+            
+            items.unshift(newItem);
+            saveItems();
+            renderItems();
+            
+            // Clear form
+            document.getElementById('title').value = '';
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            saveItems();
+            renderItems();
+        }
+
+        // Toggle status
+        function toggleStatus(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            // Cycle through statuses: not-started -> in-progress -> not-started
+            if (item.status === 'not-started') {
+                item.status = 'in-progress';
+            } else {
+                item.status = 'not-started';
+            }
+            
+            saveItems();
+            renderItems();
+        }
+
+        // Search Wikipedia
+        function searchWikipedia(title) {
+            const searchUrl = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(title)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        // Search IMDb
+        function searchIMDb(title) {
+            const searchUrl = `https://www.imdb.com/find?q=${encodeURIComponent(title)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        // Get status display info
+        function getStatusInfo(status) {
+            if (status === 'in-progress') {
+                return { text: '▶️ In Progress', class: 'status-in-progress' };
+            }
+            return { text: '⭕ Not Started', class: 'status-not-started' };
+        }
+
+        // Render items
+        function renderItems() {
+            const itemsList = document.getElementById('itemsList');
+            
+            let filteredItems = items;
+            if (currentFilter !== 'all') {
+                filteredItems = items.filter(item => item.type === currentFilter);
+            }
+            
+            if (filteredItems.length === 0) {
+                itemsList.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                        </svg>
+                        <p>No items in your watchlist yet.<br>Add some movies or shows to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            itemsList.innerHTML = filteredItems.map((item) => {
+                const statusInfo = getStatusInfo(item.status || 'not-started');
+                return `
+                    <div class="item" draggable="true" data-id="${item.id}">
+                        <div class="item-top">
+                            <div class="drag-handle" title="Drag to reorder">☰</div>
+                            <div class="item-title">${item.title}</div>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})" title="Remove">×</button>
+                        </div>
+                        <div class="item-meta">
+                            <span class="badge ${item.type === 'movie' ? 'badge-movie' : 'badge-show'}">
+                                ${item.type === 'movie' ? '🎬 Movie' : '📺 TV Show'}
+                            </span>
+                            <span class="service-badge">${item.service}</span>
+                            <button class="search-btn wikipedia" onclick="searchWikipedia('${item.title.replace(/'/g, "\\'")}')" title="Search Wikipedia">W</button>
+                            <button class="search-btn imdb" onclick="searchIMDb('${item.title.replace(/'/g, "\\'")}')" title="Search IMDb">i</button>
+                        </div>
+                        <div class="item-status">
+                            <span class="badge status-badge ${statusInfo.class}" onclick="toggleStatus(${item.id})" title="Click to change status">
+                                ${statusInfo.text}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add drag and drop event listeners
+            setupDragAndDrop();
+        }
+
+        // Allow Enter key to add item
+        document.getElementById('title').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Drag and drop functionality
+        let draggedElement = null;
+
+        function setupDragAndDrop() {
+            const itemElements = document.querySelectorAll('.item');
+            
+            itemElements.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            if (this !== draggedElement) {
+                this.style.borderTop = '3px solid #2196F3';
+            }
+        }
+
+        function handleDragLeave(e) {
+            this.style.borderTop = '';
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            this.style.borderTop = '';
+            
+            if (draggedElement !== this) {
+                const draggedId = parseInt(draggedElement.dataset.id);
+                const targetId = parseInt(this.dataset.id);
+                
+                // Find indices in the items array
+                const draggedIndex = items.findIndex(item => item.id === draggedId);
+                const targetIndex = items.findIndex(item => item.id === targetId);
+                
+                if (draggedIndex !== -1 && targetIndex !== -1) {
+                    // Remove the dragged item
+                    const [draggedItem] = items.splice(draggedIndex, 1);
+                    
+                    // Insert at the new position
+                    const newTargetIndex = items.findIndex(item => item.id === targetId);
+                    items.splice(newTargetIndex, 0, draggedItem);
+                    
+                    saveItems();
+                    renderItems();
+                }
+            }
+            
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            
+            // Clean up all border indicators
+            document.querySelectorAll('.item').forEach(item => {
+                item.style.borderTop = '';
+            });
+        }
+
+        // Export watchlist function
+        function exportWatchlist() {
+            if (items.length === 0) {
+                alert('Your watchlist is empty! Add some items first.');
+                return;
+            }
+
+            // Save export timestamp
+            localStorage.setItem('last-export-time', new Date().toISOString());
+
+            // Create text content
+            let content = 'MY WATCH LIST\n';
+            content += '='.repeat(50) + '\n\n';
+            
+            // Group by type
+            const movies = items.filter(item => item.type === 'movie');
+            const shows = items.filter(item => item.type === 'show');
+            
+            if (movies.length > 0) {
+                content += 'MOVIES\n' + '-'.repeat(50) + '\n';
+                movies.forEach(item => {
+                    const statusInfo = getStatusInfo(item.status || 'not-started');
+                    content += `• ${item.title} (${item.service}) - ${statusInfo.text}\n`;
+                });
+                content += '\n';
+            }
+            
+            if (shows.length > 0) {
+                content += 'TV SHOWS\n' + '-'.repeat(50) + '\n';
+                shows.forEach(item => {
+                    const statusInfo = getStatusInfo(item.status || 'not-started');
+                    content += `• ${item.title} (${item.service}) - ${statusInfo.text}\n`;
+                });
+                content += '\n';
+            }
+            
+            content += '='.repeat(50) + '\n';
+            content += `Total: ${items.length} items\n`;
+            content += `Exported: ${new Date().toLocaleDateString()}\n`;
+
+            // Create download
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `watchlist-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Update timer display
+            updateExportTimer();
+        }
+
+        // Import watchlist function
+        function importWatchlist(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                // Parse the text file
+                const lines = content.split('\n');
+                const importedItems = [];
+                let currentType = null;
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    
+                    // Detect section headers
+                    if (line === 'MOVIES') {
+                        currentType = 'movie';
+                        continue;
+                    } else if (line === 'TV SHOWS') {
+                        currentType = 'show';
+                        continue;
+                    }
+                    
+                    // Parse item lines (format: • Title (Service) - Status)
+                    if (line.startsWith('•') && currentType) {
+                        const match = line.match(/^•\s*(.+?)\s*\((.+?)\)(?:\s*-\s*(.+?))?$/);
+                        if (match) {
+                            const title = match[1].trim();
+                            const service = match[2].trim();
+                            const statusText = match[3] ? match[3].trim() : '';
+                            
+                            // Parse status
+                            let status = 'not-started';
+                            if (statusText.includes('In Progress')) {
+                                status = 'in-progress';
+                            }
+                            
+                            importedItems.push({
+                                id: Date.now() + Math.random(), // Unique ID
+                                title: title,
+                                type: currentType,
+                                service: service,
+                                status: status,
+                                addedDate: new Date().toISOString()
+                            });
+                        }
+                    }
+                }
+                
+                if (importedItems.length === 0) {
+                    alert('No items found in the file. Make sure it\'s a valid watchlist export.');
+                    return;
+                }
+                
+                // Ask user if they want to replace or merge
+                const replace = confirm(
+                    `Found ${importedItems.length} items to import.\n\n` +
+                    `Click OK to REPLACE your current list (${items.length} items).\n` +
+                    `Click Cancel to ADD to your current list.`
+                );
+                
+                if (replace) {
+                    items = importedItems;
+                } else {
+                    // Merge - add imported items that don't already exist
+                    const existingTitles = new Set(items.map(item => 
+                        `${item.title.toLowerCase()}-${item.type}`
+                    ));
+                    
+                    const newItems = importedItems.filter(item => 
+                        !existingTitles.has(`${item.title.toLowerCase()}-${item.type}`)
+                    );
+                    
+                    items = [...items, ...newItems];
+                    
+                    if (newItems.length < importedItems.length) {
+                        alert(`Added ${newItems.length} new items. ${importedItems.length - newItems.length} duplicates were skipped.`);
+                    } else {
+                        alert(`Added ${newItems.length} items to your watchlist!`);
+                    }
+                }
+                
+                saveItems();
+                renderItems();
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Load items when page loads
+        loadItems();
+        
+        // Update timer every minute
+        setInterval(updateExportTimer, 60000);
+    </script>
+</body>
+</html>
