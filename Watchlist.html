@@ -208,17 +208,39 @@
             border-color: #1976D2;
         }
 
+        .item-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .arrow-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 30px;
+        }
+
+        .item-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-align: center;
+            min-width: 20px;
+        }
+
         .item {
             display: flex;
             flex-direction: column;
             padding: 10px;
             border: 2px solid #999;
             border-radius: 10px;
-            margin-bottom: 8px;
             transition: all 0.3s;
             gap: 6px;
-            cursor: move;
             background: white;
+            flex: 1;
         }
 
         .item:hover {
@@ -250,8 +272,8 @@
         }
 
         .arrow-btn {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             padding: 0;
             background: #f5f5f5;
             border: 1px solid #ccc;
@@ -696,7 +718,7 @@
                 addedDate: new Date().toISOString()
             };
             
-            items.unshift(newItem);
+            items.push(newItem); // Add to end instead of beginning
             saveItems();
             renderItems();
             
@@ -817,30 +839,34 @@
                 const viewerIcon = (item.viewers === 2) ? '👥' : '👤';
                 const isFirst = index === 0;
                 const isLast = index === filteredItems.length - 1;
+                const itemNumber = index + 1;
                 
                 return `
-                    <div class="item" draggable="true" data-id="${item.id}">
-                        <div class="item-top">
-                            <div class="item-top-left">
-                                <div class="arrow-buttons">
-                                    <button class="arrow-btn" onclick="moveUp(${item.id})" ${isFirst ? 'disabled' : ''} title="Move up">▲</button>
-                                    <button class="arrow-btn" onclick="moveDown(${item.id})" ${isLast ? 'disabled' : ''} title="Move down">▼</button>
+                    <div class="item-container">
+                        <div class="arrow-controls">
+                            <button class="arrow-btn" onclick="moveUp(${item.id})" ${isFirst ? 'disabled' : ''} title="Move up">▲</button>
+                            <div class="item-number">${itemNumber}</div>
+                            <button class="arrow-btn" onclick="moveDown(${item.id})" ${isLast ? 'disabled' : ''} title="Move down">▼</button>
+                        </div>
+                        <div class="item" draggable="true" data-id="${item.id}">
+                            <div class="item-top">
+                                <div class="item-top-left">
+                                    <div class="item-title">${item.title}</div>
                                 </div>
-                                <div class="item-title">${item.title}</div>
+                                <div class="item-top-right">
+                                    <button class="status-btn ${statusClass}" onclick="toggleStatus(${item.id})" title="Toggle status">${statusIcon}</button>
+                                    <button class="delete-btn" onclick="deleteItem(${item.id})" title="Remove">×</button>
+                                </div>
                             </div>
-                            <div class="item-top-right">
-                                <button class="status-btn ${statusClass}" onclick="toggleStatus(${item.id})" title="Toggle status">${statusIcon}</button>
-                                <button class="delete-btn" onclick="deleteItem(${item.id})" title="Remove">×</button>
+                            <div class="item-meta">
+                                <span class="service-badge">${item.service}</span>
+                                <span class="badge badge-${item.type === 'movie' ? 'movie' : 'show'}">${item.type === 'movie' ? '🎬' : '📺'}</span>
+                                <button class="search-btn wikipedia" onclick="searchWikipedia('${item.title.replace(/'/g, "\\'")}')" title="Search Wikipedia">W</button>
+                                <button class="search-btn imdb" onclick="searchIMDb('${item.title.replace(/'/g, "\\'")}')" title="Search IMDb">i</button>
+                                <button class="viewer-btn" onclick="toggleViewers(${item.id})" title="Toggle viewers">${viewerIcon}</button>
                             </div>
+                            <input type="text" class="notes-input" placeholder="Add notes..." value="${item.notes || ''}" onchange="updateNotes(${item.id}, this.value)" maxlength="100">
                         </div>
-                        <div class="item-meta">
-                            <span class="service-badge">${item.service}</span>
-                            <span class="badge badge-${item.type === 'movie' ? 'movie' : 'show'}">${item.type === 'movie' ? '🎬' : '📺'}</span>
-                            <button class="search-btn wikipedia" onclick="searchWikipedia('${item.title.replace(/'/g, "\\'")}')" title="Search Wikipedia">W</button>
-                            <button class="search-btn imdb" onclick="searchIMDb('${item.title.replace(/'/g, "\\'")}')" title="Search IMDb">i</button>
-                            <button class="viewer-btn" onclick="toggleViewers(${item.id})" title="Toggle viewers">${viewerIcon}</button>
-                        </div>
-                        <input type="text" class="notes-input" placeholder="Add notes..." value="${item.notes || ''}" onchange="updateNotes(${item.id}, this.value)" maxlength="100">
                     </div>
                 `;
             }).join('');
