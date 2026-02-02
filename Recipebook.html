@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1e3a8a;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .sidebar {
+            background-color: #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .sidebar h2 {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .folder-btn {
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .folder-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .folder-btn.active {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-weight: 500;
+        }
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .recipe-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+            overflow: hidden;
+            position: relative;
+        }
+        .recipe-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .recipe-card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .recipe-card-content {
+            padding: 12px;
+        }
+        .recipe-card h3 {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+            padding-right: 30px;
+        }
+        .recipe-card p {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .recipe-card-footer {
+            padding: 0 12px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recipe-delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            line-height: 1;
+            padding: 0;
+        }
+        .recipe-delete-btn:hover {
+            background-color: #991b1b;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 50;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            padding: 24px;
+            max-height: 90vh;
+            overflow: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .modal h2 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 32px;
+            color: #6b7280;
+            line-height: 1;
+        }
+        .method-selector {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .method-btn {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .method-btn:hover {
+            border-color: #9ca3af;
+        }
+        .method-btn.active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
+        .method-btn svg {
+            margin-bottom: 8px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            font-family: monospace;
+            resize: vertical;
+        }
+        .empty-state {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 48px;
+            text-align: center;
+        }
+        .empty-state p {
+            color: #6b7280;
+            font-size: 18px;
+        }
+        .recipe-view {
+            display: none;
+            min-height: 100vh;
+            background-color: #1e3a8a;
+            padding: 24px;
+        }
+        .recipe-view.show {
+            display: block;
+        }
+        .recipe-view-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 32px;
+        }
+        .recipe-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: #4b5563;
+            margin-bottom: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .recipe-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .recipe-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .serving-adjuster {
+            margin-bottom: 24px;
+            padding: 12px;
+            background-color: #eff6ff;
+            border-radius: 8px;
+            position: relative;
+        }
+        .serving-adjuster-label {
+            font-size: 12px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .serving-adjuster-original {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .serving-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .serving-controls input[type="range"] {
+            flex: 1;
+        }
+        .serving-display {
+            font-size: 12px;
+            font-weight: 500;
+            color: #1e40af;
+            min-width: 100px;
+            text-align: center;
+        }
+        .ingredients-list {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+        .ingredients-list li {
+            padding: 8px 0 8px 16px;
+            border-left: 2px solid #3b82f6;
+            margin-bottom: 8px;
+        }
+        .instructions-list {
+            list-style: none;
+        }
+        .instructions-list li {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .step-number {
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 18px;
+            min-width: 24px;
+        }
+        .delete-btn {
+            color: #dc2626;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .delete-btn:hover {
+            color: #991b1b;
+        }
+        .hidden {
+            display: none;
+        }
+        .add-folder-btn {
+            background: none;
+            border: none;
+            color: #2563eb;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+            
+            h1 {
+                font-size: 28px;
+                text-align: center;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .sidebar {
+                margin-bottom: 16px;
+            }
+            
+            .recipe-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal {
+                margin: 0;
+                max-width: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .method-selector {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .method-btn {
+                padding: 12px;
+            }
+            
+            .recipe-view-content {
+                padding: 16px;
+            }
+            
+            .recipe-title {
+                font-size: 24px;
+            }
+            
+            .serving-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .instructions-list li {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+            
+            .btn-primary {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .recipe-title {
+                font-size: 20px;
+            }
+            
+            .modal-header h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mainView">
+        <div class="container">
+            <div class="header">
+                <h1>Recipe Book</h1>
+                <button onclick="showAddModal()" class="btn-primary">+ Add Recipe</button>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Folders</h2>
+                    <button onclick="toggleFolderInput()" class="add-folder-btn">+</button>
+                </div>
+
+                <div id="folderInputArea" class="hidden" style="margin-bottom: 12px;">
+                    <input
+                        type="text"
+                        id="newFolderName"
+                        placeholder="New folder name"
+                        style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 8px;"
+                    />
+                    <button onclick="addFolder()" class="btn-primary" style="width: 100%; padding: 4px;">Add Folder</button>
+                </div>
+
+                <div id="foldersList"></div>
+            </div>
+
+            <div id="recipeGrid" style="margin-top: 24px;"></div>
+        </div>
+    </div>
+
+    <div id="recipeView" class="recipe-view">
+        <div class="recipe-view-content">
+            <button onclick="closeRecipeView()" class="back-btn">← Back to Recipes</button>
+            <div id="recipeContent"></div>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Add Recipe</h2>
+                <button onclick="closeAddModal()" class="close-btn">×</button>
+            </div>
+
+            <div class="method-selector">
+                <button onclick="selectMethod('url')" id="urlMethodBtn" class="method-btn active">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🔗</div>
+                    <div style="font-weight: 500;">From URL</div>
+                </button>
+                <button onclick="selectMethod('image')" id="imageMethodBtn" class="method-btn">
+                    <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+                    <div style="font-weight: 500;">From Image</div>
+                </button>
+                <button onclick="selectMethod('manual')" id="manualMethodBtn" class="method-btn">
+                    <div style="font-size: 24px; margin-bottom: 8px;">✍️</div>
+                    <div style="font-weight: 500;">Manual Entry</div>
+                </button>
+            </div>
+
+            <!-- URL Input -->
+            <div id="urlInput" class="form-group">
+                <label>Recipe URL</label>
+                <input type="url" id="recipeUrl" placeholder="https://example.com/recipe" />
+                <button onclick="scrapeFromUrl()" id="urlScrapeBtn" class="btn-primary" style="width: 100%; margin-top: 12px;">
+                    Extract Recipe
+                </button>
+            </div>
+
+            <!-- Image Input -->
+            <div id="imageInput" class="form-group hidden">
+                <label>Recipe Image</label>
+                <input type="file" id="recipeImage" accept="image/*" />
+                <button onclick="scrapeFromImage()" id="imageScrapeBtn" class="btn-primary" style="width: 100%; margin-top: 12px;">
+                    Extract Recipe
+                </button>
+            </div>
+
+            <!-- Manual Input Form -->
+            <div id="manualInput" class="hidden">
+                <div class="form-group">
+                    <label>Recipe Title *</label>
+                    <input type="text" id="recipeTitle" placeholder="e.g., Chocolate Chip Cookies" />
+                </div>
+
+                <div class="form-group">
+                    <label>Servings</label>
+                    <input type="number" id="recipeServings" value="4" />
+                </div>
+
+                <div class="form-group">
+                    <label>Folder</label>
+                    <select id="recipeFolder"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Ingredients * (one per line)</label>
+                    <textarea id="recipeIngredients" rows="6" placeholder="2 cups flour&#10;1 cup sugar&#10;3 eggs"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Instructions (one per line)</label>
+                    <textarea id="recipeInstructions" rows="6" placeholder="Preheat oven to 350°F&#10;Mix dry ingredients&#10;Add wet ingredients"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Source URL (optional)</label>
+                    <input type="url" id="recipeSource" placeholder="https://example.com/recipe" />
+                </div>
+
+                <button onclick="addRecipe()" class="btn-primary" style="width: 100%;">Add Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recipes = [];
+        let folders = ['All Recipes', 'Bread', 'Pizza', 'Desserts', 'Uncategorized'];
+        let selectedFolder = 'All Recipes';
+        let currentRecipe = null;
+        let servingMultiplier = 1;
+        let currentMethod = 'url';
+
+        function init() {
+            const savedRecipes = localStorage.getItem('recipes');
+            const savedFolders = localStorage.getItem('folders');
+            
+            if (savedRecipes) recipes = JSON.parse(savedRecipes);
+            if (savedFolders) folders = JSON.parse(savedFolders);
+            
+            renderFolders();
+            renderRecipes();
+            updateFolderDropdown();
+        }
+
+        function saveData() {
+            localStorage.setItem('recipes', JSON.stringify(recipes));
+            localStorage.setItem('folders', JSON.stringify(folders));
+        }
+
+        function selectMethod(method) {
+            currentMethod = method;
+            
+            document.getElementById('urlMethodBtn').classList.remove('active');
+            document.getElementById('imageMethodBtn').classList.remove('active');
+            document.getElementById('manualMethodBtn').classList.remove('active');
+            
+            document.getElementById('urlInput').classList.add('hidden');
+            document.getElementById('imageInput').classList.add('hidden');
+            document.getElementById('manualInput').classList.add('hidden');
+            
+            if (method === 'url') {
+                document.getElementById('urlMethodBtn').classList.add('active');
+                document.getElementById('urlInput').classList.remove('hidden');
+            } else if (method === 'image') {
+                document.getElementById('imageMethodBtn').classList.add('active');
+                document.getElementById('imageInput').classList.remove('hidden');
+            } else {
+                document.getElementById('manualMethodBtn').classList.add('active');
+                document.getElementById('manualInput').classList.remove('hidden');
+            }
+        }
+
+        async function scrapeFromUrl() {
+            const url = document.getElementById('recipeUrl').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            const btn = document.getElementById('urlScrapeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Extracting...';
+
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 2000,
+                        messages: [{
+                            role: 'user',
+                            content: `Please extract the recipe from this URL: ${url}. 
+
+You must return ONLY valid JSON with no additional text, no markdown formatting, no code blocks, and no explanations.
+
+The JSON must have this exact structure:
+{
+  "title": "recipe name",
+  "servings": 4,
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "source": "${url}"
+}
+
+Return only the JSON object, nothing else.`
+                        }],
+                        tools: [{
+                            type: "web_search_20250305",
+                            name: "web_search"
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                let recipeText = '';
+                
+                for (const item of data.content) {
+                    if (item.type === 'text') {
+                        recipeText += item.text;
+                    }
+                }
+
+                // Clean the response more thoroughly
+                const cleanText = recipeText
+                    .replace(/```json/g, '')
+                    .replace(/```/g, '')
+                    .replace(/^[^{]*/, '') // Remove everything before first {
+                    .replace(/[^}]*$/, '}') // Remove everything after last }
+                    .trim();
+
+                const recipe = JSON.parse(cleanText);
+                
+                // Validate recipe has required fields
+                if (!recipe.title || !recipe.ingredients || !Array.isArray(recipe.ingredients)) {
+                    throw new Error('Invalid recipe format');
+                }
+                
+                const newRecipe = {
+                    id: Date.now(),
+                    title: recipe.title,
+                    servings: recipe.servings || 4,
+                    ingredients: recipe.ingredients,
+                    instructions: recipe.instructions || [],
+                    folder: selectedFolder === 'All Recipes' ? 'Uncategorized' : selectedFolder,
+                    source: recipe.source || url,
+                    dateAdded: new Date().toISOString()
+                };
+
+                recipes.push(newRecipe);
+                saveData();
+                closeAddModal();
+                renderRecipes();
+                
+            } catch (error) {
+                console.error('Error scraping recipe:', error);
+                alert('Failed to extract recipe. Please try manual entry or a different URL. Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Extract Recipe';
+            }
+        }
+
+        async function scrapeFromImage() {
+            const fileInput = document.getElementById('recipeImage');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image');
+                return;
+            }
+
+            const btn = document.getElementById('imageScrapeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Extracting...';
+
+            try {
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 2000,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: file.type,
+                                        data: base64Data
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: `Please extract the recipe from this image.
+
+You must return ONLY valid JSON with no additional text, no markdown formatting, no code blocks, and no explanations.
+
+The JSON must have this exact structure:
+{
+  "title": "recipe name",
+  "servings": 4,
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "source": "image"
+}
+
+Return only the JSON object, nothing else.`
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const recipeText = data.content[0].text;
+                
+                // Clean the response more thoroughly
+                const cleanText = recipeText
+                    .replace(/```json/g, '')
+                    .replace(/```/g, '')
+                    .replace(/^[^{]*/, '') // Remove everything before first {
+                    .replace(/[^}]*$/, '}') // Remove everything after last }
+                    .trim();
+
+                const recipe = JSON.parse(cleanText);
+
+                // Validate recipe has required fields
+                if (!recipe.title || !recipe.ingredients || !Array.isArray(recipe.ingredients)) {
+                    throw new Error('Invalid recipe format');
+                }
+
+                const newRecipe = {
+                    id: Date.now(),
+                    title: recipe.title,
+                    servings: recipe.servings || 4,
+                    ingredients: recipe.ingredients,
+                    instructions: recipe.instructions || [],
+                    folder: selectedFolder === 'All Recipes' ? 'Uncategorized' : selectedFolder,
+                    source: 'image',
+                    imageData: `data:${file.type};base64,${base64Data}`,
+                    dateAdded: new Date().toISOString()
+                };
+
+                recipes.push(newRecipe);
+                saveData();
+                closeAddModal();
+                renderRecipes();
+                
+            } catch (error) {
+                console.error('Error extracting recipe from image:', error);
+                alert('Failed to extract recipe from image. Please try manual entry. Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Extract Recipe';
+            }
+        }
+
+        function renderFolders() {
+            const foldersList = document.getElementById('foldersList');
+            foldersList.innerHTML = folders.map(folder => `
+                <button 
+                    onclick="selectFolder('${folder}')" 
+                    class="folder-btn ${folder === selectedFolder ? 'active' : ''}"
+                >
+                    ${folder}
+                </button>
+            `).join('');
+        }
+
+        function selectFolder(folder) {
+            selectedFolder = folder;
+            renderFolders();
+            renderRecipes();
+        }
+
+        function renderRecipes() {
+            const recipeGrid = document.getElementById('recipeGrid');
+            const filteredRecipes = selectedFolder === 'All Recipes' 
+                ? recipes 
+                : recipes.filter(r => r.folder === selectedFolder);
+
+            if (filteredRecipes.length === 0) {
+                recipeGrid.innerHTML = `
+                    <div class="empty-state">
+                        <p>No recipes yet. Add your first recipe!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group recipes by folder
+            const groupedRecipes = {};
+            filteredRecipes.forEach(recipe => {
+                if (!groupedRecipes[recipe.folder]) {
+                    groupedRecipes[recipe.folder] = [];
+                }
+                groupedRecipes[recipe.folder].push(recipe);
+            });
+
+            let html = '';
+            
+            // If All Recipes is selected, show folder headings
+            if (selectedFolder === 'All Recipes') {
+                Object.keys(groupedRecipes).sort().forEach(folderName => {
+                    html += `
+                        <div style="margin-bottom: 32px;">
+                            <h2 style="color: white; font-size: 24px; font-weight: 600; margin-bottom: 16px;">${folderName}</h2>
+                            <div class="recipe-grid">
+                                ${groupedRecipes[folderName].map(recipe => `
+                                    <div class="recipe-card" onclick="viewRecipe(${recipe.id})">
+                                        <button onclick="event.stopPropagation(); confirmDelete(${recipe.id})" class="recipe-delete-btn">×</button>
+                                        ${recipe.imageData ? `<img src="${recipe.imageData}" alt="${recipe.title}" class="recipe-card-image" />` : ''}
+                                        <div class="recipe-card-content">
+                                            <h3>${recipe.title}</h3>
+                                            <p>${recipe.servings} servings • ${recipe.ingredients.length} ingredients</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                // Single folder view
+                html = `
+                    <div class="recipe-grid">
+                        ${filteredRecipes.map(recipe => `
+                            <div class="recipe-card" onclick="viewRecipe(${recipe.id})">
+                                <button onclick="event.stopPropagation(); confirmDelete(${recipe.id})" class="recipe-delete-btn">×</button>
+                                ${recipe.imageData ? `<img src="${recipe.imageData}" alt="${recipe.title}" class="recipe-card-image" />` : ''}
+                                <div class="recipe-card-content">
+                                    <h3>${recipe.title}</h3>
+                                    <p>${recipe.servings} servings • ${recipe.ingredients.length} ingredients</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            recipeGrid.innerHTML = html;
+        }
+
+        function confirmDelete(id) {
+            if (confirm('Are you sure you want to delete this recipe?')) {
+                recipes = recipes.filter(r => r.id !== id);
+                saveData();
+                renderRecipes();
+            }
+        }
+
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('show');
+            selectMethod('url');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('show');
+            document.getElementById('recipeUrl').value = '';
+            document.getElementById('recipeImage').value = '';
+            document.getElementById('recipeTitle').value = '';
+            document.getElementById('recipeServings').value = '4';
+            document.getElementById('recipeIngredients').value = '';
+            document.getElementById('recipeInstructions').value = '';
+            document.getElementById('recipeSource').value = '';
+        }
+
+        function updateFolderDropdown() {
+            const dropdown = document.getElementById('recipeFolder');
+            dropdown.innerHTML = folders
+                .filter(f => f !== 'All Recipes')
+                .map(f => `<option value="${f}" ${f === 'Uncategorized' ? 'selected' : ''}>${f}</option>`)
+                .join('');
+        }
+
+        function addRecipe() {
+            const title = document.getElementById('recipeTitle').value;
+            const servings = parseInt(document.getElementById('recipeServings').value) || 4;
+            const ingredients = document.getElementById('recipeIngredients').value.split('\n').filter(i => i.trim());
+            const instructions = document.getElementById('recipeInstructions').value.split('\n').filter(i => i.trim());
+            const folder = document.getElementById('recipeFolder').value;
+            const source = document.getElementById('recipeSource').value || 'manual';
+
+            if (!title || ingredients.length === 0) {
+                alert('Please fill in at least the title and ingredients');
+                return;
+            }
+
+            const newRecipe = {
+                id: Date.now(),
+                title,
+                servings,
+                ingredients,
+                instructions,
+                folder,
+                source,
+                dateAdded: new Date().toISOString()
+            };
+
+            recipes.push(newRecipe);
+            saveData();
+            closeAddModal();
+            renderRecipes();
+        }
+
+        function deleteRecipe(id) {
+            if (confirm('Are you sure you want to delete this recipe?')) {
+                recipes = recipes.filter(r => r.id !== id);
+                saveData();
+                renderRecipes();
+                closeRecipeView();
+            }
+        }
+
+        function moveRecipe(id, newFolder) {
+            const recipe = recipes.find(r => r.id === id);
+            if (recipe) {
+                recipe.folder = newFolder;
+                saveData();
+                renderRecipes();
+            }
+        }
+
+        function viewRecipe(id) {
+            currentRecipe = recipes.find(r => r.id === id);
+            if (!currentRecipe) return;
+
+            servingMultiplier = 1;
+            
+            const content = `
+                ${currentRecipe.imageData ? `<img src="${currentRecipe.imageData}" alt="${currentRecipe.title}" class="recipe-image" />` : ''}
+                <div class="recipe-header">
+                    <div style="flex: 1;">
+                        <h1 class="recipe-title" contenteditable="true" id="editTitle">${currentRecipe.title}</h1>
+                        ${currentRecipe.source && currentRecipe.source !== 'manual' && currentRecipe.source !== 'image' ? 
+                            `<a href="${currentRecipe.source}" target="_blank" style="color: #2563eb; font-size: 14px;">View Original Recipe</a>` 
+                            : ''}
+                    </div>
+                    <button onclick="deleteRecipe(${currentRecipe.id})" class="delete-btn" style="font-size: 16px;">Delete</button>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px;">Folder</label>
+                    <select id="editFolder" onchange="moveRecipe(${currentRecipe.id}, this.value)" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;">
+                        ${folders.filter(f => f !== 'All Recipes').map(f => 
+                            `<option value="${f}" ${f === currentRecipe.folder ? 'selected' : ''}>${f}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+
+                <div class="serving-adjuster">
+                    <label class="serving-adjuster-label">Adjust Servings</label>
+                    <div class="serving-adjuster-original">Original: ${currentRecipe.servings}</div>
+                    <div class="serving-controls">
+                        <input type="range" min="0.5" max="${currentRecipe.servings * 2}" step="0.5" value="${currentRecipe.servings}" oninput="updateServings(this.value)" />
+                        <span id="servingDisplay" class="serving-display">${currentRecipe.servings} servings</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 16px;">Ingredients</h2>
+                    <ul class="ingredients-list" id="ingredientsList" contenteditable="true">
+                        ${currentRecipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div>
+                    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 16px;">Instructions</h2>
+                    <ol class="instructions-list" id="instructionsList" contenteditable="true">
+                        ${currentRecipe.instructions.map((step, idx) => `
+                            <li>
+                                <span class="step-number">${idx + 1}.</span>
+                                <span style="flex: 1;">${step}</span>
+                            </li>
+                        `).join('')}
+                    </ol>
+                </div>
+
+                <button onclick="saveRecipeEdits(${currentRecipe.id})" class="btn-primary" style="width: 100%; margin-top: 24px;">Save Changes</button>
+            `;
+
+            document.getElementById('recipeContent').innerHTML = content;
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('recipeView').classList.add('show');
+        }
+
+        function saveRecipeEdits(id) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+
+            const title = document.getElementById('editTitle').textContent.trim();
+            const folder = document.getElementById('editFolder').value;
+            
+            const ingredientsList = document.getElementById('ingredientsList');
+            const ingredients = Array.from(ingredientsList.querySelectorAll('li')).map(li => li.textContent.trim()).filter(i => i);
+            
+            const instructionsList = document.getElementById('instructionsList');
+            const instructions = Array.from(instructionsList.querySelectorAll('li')).map(li => {
+                const textSpan = li.querySelector('span:last-child');
+                return textSpan ? textSpan.textContent.trim() : li.textContent.replace(/^\d+\.\s*/, '').trim();
+            }).filter(i => i);
+
+            recipe.title = title;
+            recipe.folder = folder;
+            recipe.ingredients = ingredients;
+            recipe.instructions = instructions;
+
+            saveData();
+            alert('Recipe updated successfully!');
+            renderRecipes();
+        }
+
+        function closeRecipeView() {
+            document.getElementById('recipeView').classList.remove('show');
+            document.getElementById('mainView').style.display = 'block';
+        }
+
+        function updateServings(newServings) {
+            newServings = parseFloat(newServings);
+            servingMultiplier = newServings / currentRecipe.servings;
+            document.getElementById('servingDisplay').textContent = `${Math.round(newServings)} servings`;
+
+            const ingredientsList = document.getElementById('ingredientsList');
+            ingredientsList.innerHTML = currentRecipe.ingredients.map(ing => 
+                `<li>${adjustIngredient(ing)}</li>`
+            ).join('');
+        }
+
+        function adjustIngredient(ingredient) {
+            return ingredient.replace(/(\d+\.?\d*|\d*\.?\d+)(\/(\d+))?\s*/g, (match, whole, slash, denom) => {
+                if (slash && denom) {
+                    const fraction = parseFloat(whole) / parseFloat(denom);
+                    const adjusted = fraction * servingMultiplier;
+                    return (adjusted % 1 === 0 ? adjusted : adjusted.toFixed(2)) + ' ';
+                }
+                const num = parseFloat(whole);
+                if (isNaN(num)) return match;
+                const adjusted = num * servingMultiplier;
+                return (adjusted % 1 === 0 ? adjusted : adjusted.toFixed(2)) + ' ';
+            });
+        }
+
+        function toggleFolderInput() {
+            const input = document.getElementById('folderInputArea');
+            input.classList.toggle('hidden');
+        }
+
+        function addFolder() {
+            const input = document.getElementById('newFolderName');
+            const name = input.value.trim();
+            
+            if (name && !folders.includes(name)) {
+                folders.push(name);
+                saveData();
+                renderFolders();
+                updateFolderDropdown();
+                input.value = '';
+                toggleFolderInput();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
