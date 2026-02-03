@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch List</title>
+    <link rel="apple-touch-icon" sizes="1024x1024" href="watchlist-icon.png">
+    <link rel="icon" type="image/png" sizes="1024x1024" href="watchlist-icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            padding: 6px 0;
+        }
+
+        .app-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .app-title {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+
+        .app-title-main {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .app-title-sub {
+            color: rgba(255,255,255,0.55);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .add-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .type-btn.active {
+            background: #1976D2;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        .items-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .export-timer {
+            font-size: 12px;
+            color: #666;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .export-timer.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .export-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #45a049;
+        }
+
+        .import-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: #1976D2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .import-btn:hover {
+            background: #1565C0;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #1976D2;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        .item-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .arrow-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 30px;
+        }
+
+        .item-number {
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 0;
+            background: transparent;
+            cursor: text;
+            font-family: inherit;
+        }
+
+        .item-number:focus {
+            outline: none;
+            border-color: #1976D2;
+            background: #f0f7ff;
+        }
+
+        .item-number::-webkit-outer-spin-button,
+        .item-number::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .item-number[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .section-divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ccc, transparent);
+            margin: 10px 0;
+        }
+
+        .item.in-progress-card {
+            border-color: #4CAF50;
+            margin-bottom: 8px;
+        }
+
+        .item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 2px solid #999;
+            border-radius: 10px;
+            transition: all 0.3s;
+            gap: 6px;
+            background: white;
+            flex: 1;
+        }
+
+        .item:hover {
+            border-color: #1976D2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+        }
+
+        .item.dragging {
+            opacity: 0.5;
+            border-color: #1976D2;
+        }
+
+        .drag-handle {
+            color: #999;
+            font-size: 16px;
+            cursor: grab;
+            user-select: none;
+            padding-right: 6px;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .arrow-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .arrow-btn {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .arrow-btn:hover {
+            background: #e0e0e0;
+            border-color: #1976D2;
+        }
+
+        .arrow-btn:active {
+            background: #d0d0d0;
+        }
+
+        .arrow-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .arrow-btn:disabled:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        .item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .item-top-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .item-top-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .item-status {
+            margin-top: 0;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-bottom {
+            display: flex;
+            gap: 6px;
+            padding-top: 4px;
+            justify-content: flex-start;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .search-btn {
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+            padding: 0;
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        .search-btn.wikipedia {
+            color: #000;
+        }
+
+        .search-btn.imdb {
+            color: #f5c518;
+            background: #000;
+            border-color: #000;
+        }
+
+        .search-btn.imdb:hover {
+            background: #1a1a1a;
+        }
+
+        .viewer-btn {
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+            padding: 0;
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .viewer-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .status-btn {
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+            padding: 0;
+            border: 2px solid;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .status-btn.not-started {
+            background: white;
+            border-color: #333;
+            color: #333;
+        }
+
+        .status-btn.in-progress {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .status-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            word-wrap: break-word;
+            flex: 1;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+
+        .badge-movie {
+            background: #ffeaa7;
+        }
+
+        .badge-show {
+            background: #bbdefb;
+        }
+
+        .service-badge {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .status-badge:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .status-not-started {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .status-in-progress {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+            resize: none;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #1976D2;
+        }
+
+        .notes-input::placeholder {
+            color: #999;
+        }
+
+        .delete-btn {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            padding: 0;
+            background: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .delete-btn:hover {
+            background: #d63031;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <div class="app-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="4" width="14" height="10" rx="2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 8.5L21 6V14L16 11.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 17H17" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M9 19H15" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="app-title">
+                <span class="app-title-main">Watchlist</span>
+                <span class="app-title-sub">Your streaming picks</span>
+            </div>
+        </div>
+        
+        <div class="add-section">
+            <div class="type-selector">
+                <button class="type-btn active" data-type="movie">Movie</button>
+                <button class="type-btn" data-type="show">TV Show</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" placeholder="Enter movie or show name">
+            </div>
+            
+            <div class="form-group">
+                <label for="service">Streaming Service</label>
+                <select id="service">
+                    <option value="Netflix">Netflix</option>
+                    <option value="Disney+">Disney+</option>
+                    <option value="Amazon Prime">Amazon Prime</option>
+                    <option value="Hulu">Hulu</option>
+                    <option value="HBO Max">HBO Max</option>
+                    <option value="Apple TV+">Apple TV+</option>
+                    <option value="Paramount+">Paramount+</option>
+                    <option value="Peacock">Peacock</option>
+                    <option value="YouTube TV">YouTube TV</option>
+                    <option value="PBS">PBS</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <button class="add-btn" onclick="addItem()">Add to Watchlist</button>
+        </div>
+        
+        <div class="items-section">
+            <div class="section-header">
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="movie">Movies</button>
+                    <button class="filter-btn" data-filter="show">TV Shows</button>
+                </div>
+                <div id="exportTimer" class="export-timer"></div>
+                <div class="button-group">
+                    <input type="file" id="importFile" accept=".txt" onchange="importWatchlist(event)">
+                    <button class="import-btn" onclick="document.getElementById('importFile').click()">Import List</button>
+                    <button class="export-btn" onclick="exportWatchlist()">Export List</button>
+                </div>
+            </div>
+            
+            <div id="itemsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentType = 'movie';
+        let currentFilter = 'all';
+        let items = [];
+
+        // Load items from storage on startup
+        function loadItems() {
+            try {
+                const saved = localStorage.getItem('watchlist-items');
+                if (saved) {
+                    items = JSON.parse(saved);
+                    renderItems();
+                }
+            } catch (error) {
+                console.log('No saved items yet');
+            }
+            updateExportTimer();
+        }
+
+        // Save items to storage
+        function saveItems() {
+            try {
+                localStorage.setItem('watchlist-items', JSON.stringify(items));
+            } catch (error) {
+                console.error('Error saving items:', error);
+            }
+        }
+
+        // Update export timer display
+        function updateExportTimer() {
+            const lastExport = localStorage.getItem('last-export-time');
+            const timerEl = document.getElementById('exportTimer');
+            
+            if (!lastExport) {
+                timerEl.innerHTML = '⚠️ Never exported';
+                timerEl.classList.add('warning');
+                return;
+            }
+            
+            const lastExportDate = new Date(lastExport);
+            const now = new Date();
+            const diffMs = now - lastExportDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            let timeText = '';
+            if (diffDays > 0) {
+                timeText = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } else if (diffHours > 0) {
+                timeText = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffMins > 0) {
+                timeText = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            } else {
+                timeText = 'Just now';
+            }
+            
+            timerEl.innerHTML = `📁 Last export: ${timeText}`;
+            
+            // Add warning style if more than 7 days
+            if (diffDays >= 7) {
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.remove('warning');
+            }
+        }
+
+        // Type selector
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentType = this.dataset.type;
+            });
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderItems();
+            });
+        });
+
+        // Add item
+        function addItem() {
+            const title = document.getElementById('title').value.trim();
+            const service = document.getElementById('service').value;
+            
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+            
+            const newItem = {
+                id: Date.now(),
+                title: title,
+                type: currentType,
+                service: service,
+                status: 'not-started',
+                viewers: 1,
+                notes: '',
+                addedDate: new Date().toISOString()
+            };
+            
+            items.push(newItem); // Add to end instead of beginning
+            saveItems();
+            renderItems();
+            
+            // Clear form
+            document.getElementById('title').value = '';
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to remove this item?')) {
+                items = items.filter(item => item.id !== id);
+                saveItems();
+                renderItems();
+            }
+        }
+
+        // Toggle viewers
+        function toggleViewers(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            item.viewers = item.viewers === 1 ? 2 : 1;
+            saveItems();
+            renderItems();
+        }
+
+        // Move item up
+        function moveUp(id) {
+            const notStarted = items.filter(i => i.status !== 'in-progress');
+            const subIndex = notStarted.findIndex(i => i.id === id);
+            if (subIndex <= 0) return;
+
+            // Swap in the main items array
+            const idAbove = notStarted[subIndex - 1].id;
+            const indexA = items.findIndex(i => i.id === idAbove);
+            const indexB = items.findIndex(i => i.id === id);
+            [items[indexA], items[indexB]] = [items[indexB], items[indexA]];
+
+            saveItems();
+            renderItems();
+        }
+
+        // Move item down
+        function moveDown(id) {
+            const notStarted = items.filter(i => i.status !== 'in-progress');
+            const subIndex = notStarted.findIndex(i => i.id === id);
+            if (subIndex >= notStarted.length - 1) return;
+
+            // Swap in the main items array
+            const idBelow = notStarted[subIndex + 1].id;
+            const indexA = items.findIndex(i => i.id === id);
+            const indexB = items.findIndex(i => i.id === idBelow);
+            [items[indexA], items[indexB]] = [items[indexB], items[indexA]];
+
+            saveItems();
+            renderItems();
+        }
+
+        // Move item to a specific position (1-based)
+        function moveToPosition(id, newPos) {
+            // Filter to only not-started items to get the correct sub-list
+            const notStartedItems = items.filter(i => i.status !== 'in-progress');
+            const currentIndex = items.findIndex(i => i.id === id);
+            
+            // Clamp position
+            if (newPos < 1) newPos = 1;
+            if (newPos > notStartedItems.length) newPos = notStartedItems.length;
+            
+            // Remove item from array
+            const [movedItem] = items.splice(currentIndex, 1);
+            
+            // Find where to insert: after all in-progress items, then offset by newPos-1
+            const inProgressCount = items.filter(i => i.status === 'in-progress').length;
+            const insertIndex = inProgressCount + (newPos - 1);
+            
+            items.splice(insertIndex, 0, movedItem);
+            saveItems();
+            renderItems();
+        }
+
+        // Update notes
+        function updateNotes(id, notes) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            item.notes = notes;
+            saveItems();
+        }
+
+        // Toggle status
+        function toggleStatus(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            if (item.status === 'not-started') {
+                // Moving to in-progress: remove from current position, add to top
+                item.status = 'in-progress';
+                items = items.filter(i => i.id !== id);
+                items.unshift(item);
+            } else {
+                // Moving back to not-started: remove from current position, add to end
+                item.status = 'not-started';
+                items = items.filter(i => i.id !== id);
+                items.push(item);
+            }
+            
+            saveItems();
+            renderItems();
+        }
+
+        // Search Wikipedia
+        function searchWikipedia(title) {
+            const searchUrl = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(title)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        // Search IMDb
+        function searchIMDb(title) {
+            const searchUrl = `https://www.imdb.com/find?q=${encodeURIComponent(title)}`;
+            window.open(searchUrl, '_blank');
+        }
+
+        // Get status display info
+        function getStatusInfo(status) {
+            if (status === 'in-progress') {
+                return { text: '▶️ In Progress', class: 'status-in-progress' };
+            }
+            return { text: '⭕ Not Started', class: 'status-not-started' };
+        }
+
+        // Render items
+        function renderItems() {
+            const itemsList = document.getElementById('itemsList');
+            
+            let filteredItems = items;
+            if (currentFilter !== 'all') {
+                filteredItems = items.filter(item => item.type === currentFilter);
+            }
+            
+            if (filteredItems.length === 0) {
+                itemsList.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+                        </svg>
+                        <p>No items in your watchlist yet.<br>Add some movies or shows to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Split into two groups
+            const inProgressItems = filteredItems.filter(item => item.status === 'in-progress');
+            const notStartedItems = filteredItems.filter(item => item.status !== 'in-progress');
+
+            function renderCard(item, options = {}) {
+                const statusIcon = (item.status === 'in-progress') ? '▶' : '○';
+                const statusClass = (item.status === 'in-progress') ? 'in-progress' : 'not-started';
+                const viewerIcon = (item.viewers === 2) ? '👥' : '👤';
+
+                return `
+                    <div class="item ${item.status === 'in-progress' ? 'in-progress-card' : ''}" data-id="${item.id}">
+                        <div class="item-top">
+                            <div class="item-top-left">
+                                <div class="item-title">${item.title}</div>
+                            </div>
+                            <div class="item-top-right">
+                                <button class="status-btn ${statusClass}" onclick="toggleStatus(${item.id})" title="Toggle status">${statusIcon}</button>
+                                <button class="delete-btn" onclick="deleteItem(${item.id})" title="Remove">×</button>
+                            </div>
+                        </div>
+                        <div class="item-meta">
+                            <span class="service-badge">${item.service}</span>
+                            <span class="badge badge-${item.type === 'movie' ? 'movie' : 'show'}">${item.type === 'movie' ? '🎬' : '📺'}</span>
+                            <button class="search-btn wikipedia" onclick="searchWikipedia('${item.title.replace(/'/g, "\\'")}')" title="Search Wikipedia">W</button>
+                            <button class="search-btn imdb" onclick="searchIMDb('${item.title.replace(/'/g, "\\'")}')" title="Search IMDb">i</button>
+                            <button class="viewer-btn" onclick="toggleViewers(${item.id})" title="Toggle viewers">${viewerIcon}</button>
+                        </div>
+                        <input type="text" class="notes-input" placeholder="Add notes..." value="${item.notes || ''}" onchange="updateNotes(${item.id}, this.value)" maxlength="100">
+                    </div>
+                `;
+            }
+
+            let html = '';
+
+            // In Progress section (full width, no arrows/numbers)
+            if (inProgressItems.length > 0) {
+                inProgressItems.forEach(item => {
+                    html += renderCard(item);
+                });
+
+                // Add divider only if there are also not-started items
+                if (notStartedItems.length > 0) {
+                    html += '<div class="section-divider"></div>';
+                }
+            }
+
+            // Not Started section (with arrows and editable numbers)
+            notStartedItems.forEach((item, index) => {
+                const isFirst = index === 0;
+                const isLast = index === notStartedItems.length - 1;
+                const itemNumber = index + 1;
+
+                html += `
+                    <div class="item-container">
+                        <div class="arrow-controls">
+                            <button class="arrow-btn" onclick="moveUp(${item.id})" ${isFirst ? 'disabled' : ''} title="Move up">▲</button>
+                            <input type="number" class="item-number" value="${itemNumber}" min="1" max="${notStartedItems.length}" onchange="moveToPosition(${item.id}, parseInt(this.value))">
+                            <button class="arrow-btn" onclick="moveDown(${item.id})" ${isLast ? 'disabled' : ''} title="Move down">▼</button>
+                        </div>
+                        ${renderCard(item)}
+                    </div>
+                `;
+            });
+            
+            itemsList.innerHTML = html;
+        }
+
+        // Allow Enter key to add item
+        document.getElementById('title').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Export watchlist function
+        function exportWatchlist() {
+            if (items.length === 0) {
+                alert('Your watchlist is empty! Add some items first.');
+                return;
+            }
+
+            // Save export timestamp
+            localStorage.setItem('last-export-time', new Date().toISOString());
+
+            // Create text content
+            let content = 'MY WATCH LIST\n';
+            content += '='.repeat(50) + '\n\n';
+            
+            // Group by type
+            const movies = items.filter(item => item.type === 'movie');
+            const shows = items.filter(item => item.type === 'show');
+            
+            if (movies.length > 0) {
+                content += 'MOVIES\n' + '-'.repeat(50) + '\n';
+                movies.forEach(item => {
+                    const statusInfo = getStatusInfo(item.status || 'not-started');
+                    const viewers = item.viewers === 2 ? '👥' : '👤';
+                    const notes = item.notes ? ` | Notes: ${item.notes}` : '';
+                    content += `• ${item.title} (${item.service}) - ${statusInfo.text} - ${viewers}${notes}\n`;
+                });
+                content += '\n';
+            }
+            
+            if (shows.length > 0) {
+                content += 'TV SHOWS\n' + '-'.repeat(50) + '\n';
+                shows.forEach(item => {
+                    const statusInfo = getStatusInfo(item.status || 'not-started');
+                    const viewers = item.viewers === 2 ? '👥' : '👤';
+                    const notes = item.notes ? ` | Notes: ${item.notes}` : '';
+                    content += `• ${item.title} (${item.service}) - ${statusInfo.text} - ${viewers}${notes}\n`;
+                });
+                content += '\n';
+            }
+            
+            content += '='.repeat(50) + '\n';
+            content += `Total: ${items.length} items\n`;
+            content += `Exported: ${new Date().toLocaleDateString()}\n`;
+
+            // Create download
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `watchlist-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Update timer display
+            updateExportTimer();
+        }
+
+        // Import watchlist function
+        function importWatchlist(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                // Parse the text file
+                const lines = content.split('\n');
+                const importedItems = [];
+                let currentType = null;
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    
+                    // Detect section headers
+                    if (line === 'MOVIES') {
+                        currentType = 'movie';
+                        continue;
+                    } else if (line === 'TV SHOWS') {
+                        currentType = 'show';
+                        continue;
+                    }
+                    
+                    // Parse item lines (format: • Title (Service) - Status - Viewers | Notes: text)
+                    if (line.startsWith('•') && currentType) {
+                        // Match: • Title (Service) - Status - Viewers | Notes: text (optional)
+                        const match = line.match(/^•\s*(.+?)\s*\((.+?)\)(?:\s*-\s*(.+?))?(?:\s*-\s*([👤👥]))?(?:\s*\|\s*Notes:\s*(.+?))?$/);
+                        if (match) {
+                            const title = match[1].trim();
+                            const service = match[2].trim();
+                            const statusText = match[3] ? match[3].trim() : '';
+                            const viewerIcon = match[4] || '👤';
+                            const notes = match[5] ? match[5].trim() : '';
+                            
+                            // Parse status
+                            let status = 'not-started';
+                            if (statusText.includes('In Progress')) {
+                                status = 'in-progress';
+                            }
+                            
+                            // Parse viewers
+                            const viewers = viewerIcon === '👥' ? 2 : 1;
+                            
+                            importedItems.push({
+                                id: Date.now() + Math.random(), // Unique ID
+                                title: title,
+                                type: currentType,
+                                service: service,
+                                status: status,
+                                viewers: viewers,
+                                notes: notes,
+                                addedDate: new Date().toISOString()
+                            });
+                        }
+                    }
+                }
+                
+                if (importedItems.length === 0) {
+                    alert('No items found in the file. Make sure it\'s a valid watchlist export.');
+                    return;
+                }
+                
+                // Ask user if they want to replace or merge
+                const replace = confirm(
+                    `Found ${importedItems.length} items to import.\n\n` +
+                    `Click OK to REPLACE your current list (${items.length} items).\n` +
+                    `Click Cancel to ADD to your current list.`
+                );
+                
+                if (replace) {
+                    items = importedItems;
+                } else {
+                    // Merge - add imported items that don't already exist
+                    const existingTitles = new Set(items.map(item => 
+                        `${item.title.toLowerCase()}-${item.type}`
+                    ));
+                    
+                    const newItems = importedItems.filter(item => 
+                        !existingTitles.has(`${item.title.toLowerCase()}-${item.type}`)
+                    );
+                    
+                    items = [...items, ...newItems];
+                    
+                    if (newItems.length < importedItems.length) {
+                        alert(`Added ${newItems.length} new items. ${importedItems.length - newItems.length} duplicates were skipped.`);
+                    } else {
+                        alert(`Added ${newItems.length} items to your watchlist!`);
+                    }
+                }
+                
+                saveItems();
+                renderItems();
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Load items when page loads
+        loadItems();
+        
+        // Update timer every minute
+        setInterval(updateExportTimer, 60000);
+    </script>
+</body>
+</html>
