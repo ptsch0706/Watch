@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My To Dos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1d1d1f;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .create-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .create-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #424245;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0051d5;
+        }
+
+        .todos-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+
+        .todo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .todo-card.personal {
+            border-left: 4px solid #34c759;
+        }
+
+        .todo-card.work {
+            border-left: 4px solid #007aff;
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .todo-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 5px;
+        }
+
+        .todo-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .todo-type.personal {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .todo-type.work {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .todo-details {
+            color: #424245;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .todo-date {
+            color: #86868b;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .todo-date.today {
+            color: #ff3b30;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #86868b;
+        }
+
+        /* Export button for debugging */
+        .export-btn {
+            background: #5856d6;
+            margin-top: 10px;
+        }
+
+        .export-btn:hover {
+            background: #4745b8;
+        }
+    </style>
+</head>
+<body>
+    <h1>My To Dos</h1>
+
+    <div class="create-section">
+        <h2>Create New To Do</h2>
+        <form id="todoForm">
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Type *</label>
+                <select id="type" required>
+                    <option value="">Select type...</option>
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="details">Details</label>
+                <textarea id="details"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="reminderDate">Reminder Date *</label>
+                <input type="date" id="reminderDate" required>
+            </div>
+
+            <button type="submit">Add To Do</button>
+        </form>
+    </div>
+
+    <div class="todos-section">
+        <h2>My To Dos</h2>
+        <div id="todosList"></div>
+    </div>
+
+    <!-- Hidden pre tag for iOS Shortcuts to read -->
+    <pre id="todosData" style="display: none;"></pre>
+
+    <script>
+        // Initialize todos from localStorage
+        let todos = [];
+        try {
+            todos = JSON.parse(localStorage.getItem('todos') || '[]');
+        } catch(e) {
+            console.log('LocalStorage not available, using memory only');
+            todos = [];
+        }
+
+        // Update the hidden data element for iOS Shortcuts
+        function updateDataExport() {
+            document.getElementById('todosData').textContent = JSON.stringify(todos, null, 2);
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todoDate = new Date(date);
+            todoDate.setHours(0, 0, 0, 0);
+            
+            const isToday = todoDate.getTime() === today.getTime();
+            
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            const formatted = date.toLocaleDateString('en-US', options);
+            
+            return { formatted, isToday };
+        }
+
+        // Render all todos
+        function renderTodos() {
+            const todosList = document.getElementById('todosList');
+            
+            if (todos.length === 0) {
+                todosList.innerHTML = '<div class="empty-state">No to dos yet. Create one above!</div>';
+                updateDataExport();
+                return;
+            }
+
+            // Sort by date (earliest first)
+            const sortedTodos = [...todos].sort((a, b) => 
+                new Date(a.reminderDate) - new Date(b.reminderDate)
+            );
+
+            todosList.innerHTML = sortedTodos.map((todo, index) => {
+                const { formatted, isToday } = formatDate(todo.reminderDate);
+                return `
+                    <div class="todo-card ${todo.type}">
+                        <div class="todo-header">
+                            <div>
+                                <div class="todo-title">${todo.title}</div>
+                                <span class="todo-type ${todo.type}">${todo.type}</span>
+                            </div>
+                        </div>
+                        ${todo.details ? `<div class="todo-details">${todo.details}</div>` : ''}
+                        <div class="todo-date ${isToday ? 'today' : ''}">
+                            📅 ${formatted}${isToday ? ' (Today!)' : ''}
+                        </div>
+                        <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
+                    </div>
+                `;
+            }).join('');
+
+            updateDataExport();
+        }
+
+        // Add new todo
+        document.getElementById('todoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newTodo = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                type: document.getElementById('type').value,
+                details: document.getElementById('details').value,
+                reminderDate: document.getElementById('reminderDate').value,
+                createdAt: new Date().toISOString()
+            };
+
+            todos.push(newTodo);
+            try {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            } catch(e) {
+                console.log('Could not save to localStorage');
+            }
+            
+            // Reset form
+            this.reset();
+            
+            // Re-render
+            renderTodos();
+        });
+
+        // Delete todo
+        function deleteTodo(index) {
+            const sortedTodos = [...todos].sort((a, b) => 
+                new Date(a.reminderDate) - new Date(b.reminderDate)
+            );
+            const todoToDelete = sortedTodos[index];
+            todos = todos.filter(t => t.id !== todoToDelete.id);
+            try {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            } catch(e) {
+                console.log('Could not save to localStorage');
+            }
+            renderTodos();
+        }
+
+        // Initial render
+        renderTodos();
+
+        // Set minimum date to today
+        document.getElementById('reminderDate').min = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
