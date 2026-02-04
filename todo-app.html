@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo</title>
+    
+    <!-- iOS Home Screen Icons -->
+    <link rel="apple-touch-icon" href="todo-icon-1024x1024.png">
+    <link rel="icon" type="image/png" href="todo-icon-1024x1024.png">
+    
+    <!-- iOS Web App Capable -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ToDo">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#34c759">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            padding: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            text-align: center;
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding: 12px 0 4px 0;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        h1::before {
+            content: '';
+            position: absolute;
+            left: calc(50% - 75px);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            left: calc(50% - 67px);
+            top: calc(50% + 1px);
+            width: 8px;
+            height: 14px;
+            border: solid white;
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+        }
+
+        .create-section {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: none;
+            border: 1px solid #e5e5e7;
+        }
+
+        .create-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #424245;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0051d5;
+        }
+
+        .todos-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .todo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 14px 14px 50px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .todo-card.personal {
+            border-left: 4px solid #34c759;
+        }
+
+        .todo-card.work {
+            border-left: 4px solid #007aff;
+        }
+
+        .todo-card.completed {
+            opacity: 0.6;
+        }
+
+        .todo-card.completed .todo-title,
+        .todo-card.completed .todo-details {
+            text-decoration: line-through;
+        }
+
+        .todo-checkbox {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #d2d2d7;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .todo-checkbox:hover {
+            border-color: #34c759;
+        }
+
+        .todo-checkbox.checked {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            border-color: #34c759;
+        }
+
+        .todo-checkbox.checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .remove-btn {
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            width: 24px;
+            height: 24px;
+            background: #ff3b30;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        .remove-btn::before,
+        .remove-btn::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 2px;
+            background: white;
+        }
+
+        .remove-btn::before {
+            transform: rotate(45deg);
+        }
+
+        .remove-btn::after {
+            transform: rotate(-45deg);
+        }
+
+        .sub-todos {
+            margin-top: 12px;
+            padding-left: 0;
+        }
+
+        .sub-todo-item {
+            background: #f5f5f7;
+            border-radius: 8px;
+            padding: 10px 30px 10px 40px;
+            margin-bottom: 8px;
+            position: relative;
+            font-size: 14px;
+        }
+
+        .sub-todo-item.completed .sub-todo-title {
+            text-decoration: line-through;
+        }
+
+        .sub-todo-item.completed .sub-todo-details {
+            text-decoration: line-through;
+        }
+
+        .sub-todo-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sub-todo-details {
+            font-size: 13px;
+            color: #6e6e73;
+            margin-bottom: 4px;
+        }
+
+        .sub-todo-date {
+            font-size: 12px;
+            color: #86868b;
+        }
+
+        .sub-todo-date.today {
+            color: #ff3b30;
+            font-weight: 600;
+        }
+
+        .sub-todo-checkbox {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d2d2d7;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sub-todo-checkbox:hover {
+            border-color: #34c759;
+        }
+
+        .sub-todo-checkbox.checked {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            border-color: #34c759;
+        }
+
+        .sub-todo-checkbox.checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 1.5px 1.5px 0;
+            transform: rotate(45deg);
+        }
+
+        .sub-todo-remove {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            background: #ff3b30;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .sub-todo-remove:hover {
+            background: #d32f2f;
+        }
+
+        .sub-todo-remove::before,
+        .sub-todo-remove::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 1.5px;
+            background: white;
+        }
+
+        .sub-todo-remove::before {
+            transform: rotate(45deg);
+        }
+
+        .sub-todo-remove::after {
+            transform: rotate(-45deg);
+        }
+
+        .add-subtodo-btn {
+            background: #5856d6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .add-subtodo-btn:hover {
+            background: #4745b8;
+        }
+
+        .subtodo-input-container {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .subtodo-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .subtodo-textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 50px;
+            font-family: inherit;
+        }
+
+        .subtodo-date-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .subtodo-button-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .subtodo-add-btn {
+            flex: 1;
+            background: #34c759;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .subtodo-add-btn:hover {
+            background: #2da84a;
+        }
+
+        .subtodo-cancel-btn {
+            flex: 1;
+            background: #86868b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .subtodo-cancel-btn:hover {
+            background: #6e6e73;
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .todo-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 5px;
+        }
+
+        .todo-type {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .todo-type.personal {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .todo-type.work {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .todo-details {
+            color: #424245;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .todo-date {
+            color: #86868b;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .todo-date.today {
+            color: #ff3b30;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #86868b;
+        }
+
+        .import-export-section {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: none;
+            border: 1px solid #e5e5e7;
+        }
+
+        .import-export-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .export-btn {
+            background: #34c759;
+        }
+
+        .export-btn:hover {
+            background: #2da84a;
+        }
+
+        .import-btn {
+            background: #5856d6;
+        }
+
+        .import-btn:hover {
+            background: #4745b8;
+        }
+
+        .last-export {
+            font-size: 13px;
+            color: #86868b;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>ToDo</h1>
+
+    <div class="create-section">
+        <h2>Create New To Do</h2>
+        <form id="todoForm">
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Type *</label>
+                <select id="type" required>
+                    <option value="">Select type...</option>
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="details">Details</label>
+                <textarea id="details"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="reminderDate">Reminder Date *</label>
+                <input type="date" id="reminderDate" required>
+            </div>
+
+            <button type="submit">Add To Do</button>
+        </form>
+    </div>
+
+    <div class="import-export-section">
+        <h2>Import / Export</h2>
+        <div class="button-group">
+            <button class="export-btn" onclick="exportTodos()">Export To Dos</button>
+            <button class="import-btn" onclick="document.getElementById('fileInput').click()">Import To Dos</button>
+        </div>
+        <div class="last-export" id="lastExport">Never exported</div>
+        <input type="file" id="fileInput" accept=".json" onchange="importTodos(event)">
+    </div>
+
+    <div class="todos-section">
+        <h2>My To Dos</h2>
+        <div id="todosList"></div>
+    </div>
+
+    <!-- Hidden pre tag for iOS Shortcuts to read -->
+    <pre id="todosData" style="display: none;"></pre>
+
+    <script>
+        // Initialize todos from localStorage
+        let todos = [];
+        try {
+            todos = JSON.parse(localStorage.getItem('todos') || '[]');
+        } catch(e) {
+            console.log('LocalStorage not available, using memory only');
+            todos = [];
+        }
+
+        // Update the hidden data element for iOS Shortcuts
+        function updateDataExport() {
+            document.getElementById('todosData').textContent = JSON.stringify(todos, null, 2);
+        }
+
+        // Display last export time
+        function displayLastExport() {
+            try {
+                const lastExport = localStorage.getItem('lastExport');
+                const lastExportEl = document.getElementById('lastExport');
+                if (lastExport) {
+                    const date = new Date(lastExport);
+                    const options = { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    };
+                    lastExportEl.textContent = `Last exported: ${date.toLocaleDateString('en-US', options)}`;
+                } else {
+                    lastExportEl.textContent = 'Never exported';
+                }
+            } catch(e) {
+                document.getElementById('lastExport').textContent = 'Never exported';
+            }
+        }
+
+        // Export todos to JSON file
+        function exportTodos() {
+            const dataStr = JSON.stringify(todos, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `todos-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            // Save export timestamp
+            try {
+                localStorage.setItem('lastExport', new Date().toISOString());
+                displayLastExport();
+            } catch(e) {
+                console.log('Could not save export timestamp');
+            }
+        }
+
+        // Import todos from JSON file
+        function importTodos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedTodos = JSON.parse(e.target.result);
+                    
+                    // Validate that it's an array
+                    if (!Array.isArray(importedTodos)) {
+                        alert('Invalid file format. Please upload a valid todos JSON file.');
+                        return;
+                    }
+                    
+                    // Confirm before overwriting
+                    const confirmMsg = todos.length > 0 
+                        ? `This will replace your current ${todos.length} to do(s). Continue?`
+                        : 'Import these to dos?';
+                    
+                    if (confirm(confirmMsg)) {
+                        todos = importedTodos;
+                        try {
+                            localStorage.setItem('todos', JSON.stringify(todos));
+                        } catch(e) {
+                            console.log('Could not save to localStorage');
+                        }
+                        renderTodos();
+                        alert(`Successfully imported ${todos.length} to do(s)!`);
+                    }
+                } catch(e) {
+                    alert('Error reading file. Please make sure it\'s a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todoDate = new Date(date);
+            todoDate.setHours(0, 0, 0, 0);
+            
+            const isToday = todoDate.getTime() === today.getTime();
+            
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            const formatted = date.toLocaleDateString('en-US', options);
+            
+            return { formatted, isToday };
+        }
+
+        // Render all todos
+        function renderTodos() {
+            const todosList = document.getElementById('todosList');
+            
+            if (todos.length === 0) {
+                todosList.innerHTML = '<div class="empty-state">No to dos yet. Create one above!</div>';
+                updateDataExport();
+                return;
+            }
+
+            // Sort by date (earliest first)
+            const sortedTodos = [...todos].sort((a, b) => 
+                new Date(a.reminderDate) - new Date(b.reminderDate)
+            );
+
+            todosList.innerHTML = sortedTodos.map((todo) => {
+                const { formatted, isToday } = formatDate(todo.reminderDate);
+                const subTodosHtml = todo.subTodos && todo.subTodos.length > 0 
+                    ? `<div class="sub-todos">
+                        ${todo.subTodos.map((sub, subIndex) => {
+                            const subDate = sub.reminderDate ? formatDate(sub.reminderDate) : null;
+                            return `
+                            <div class="sub-todo-item ${sub.completed ? 'completed' : ''}">
+                                <div class="sub-todo-checkbox ${sub.completed ? 'checked' : ''}" onclick="toggleSubTodo(${todo.id}, ${subIndex})"></div>
+                                <div class="sub-todo-title">${sub.title}</div>
+                                ${sub.details ? `<div class="sub-todo-details">${sub.details}</div>` : ''}
+                                ${subDate ? `<div class="sub-todo-date ${subDate.isToday ? 'today' : ''}">📅 ${subDate.formatted}${subDate.isToday ? ' (Today!)' : ''}</div>` : ''}
+                                <div class="sub-todo-remove" onclick="removeSubTodo(${todo.id}, ${subIndex})"></div>
+                            </div>
+                        `}).join('')}
+                    </div>`
+                    : '';
+                
+                return `
+                    <div class="todo-card ${todo.type} ${todo.completed ? 'completed' : ''}">
+                        <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" onclick="toggleTodo(${todo.id})"></div>
+                        <div class="remove-btn" onclick="removeTodo(${todo.id})"></div>
+                        <div class="todo-header">
+                            <div>
+                                <div class="todo-title">${todo.title}</div>
+                                <span class="todo-type ${todo.type}">${todo.type}</span>
+                            </div>
+                        </div>
+                        ${todo.details ? `<div class="todo-details">${todo.details}</div>` : ''}
+                        <div class="todo-date ${isToday ? 'today' : ''}">
+                            📅 ${formatted}${isToday ? ' (Today!)' : ''}
+                        </div>
+                        ${subTodosHtml}
+                        <button class="add-subtodo-btn" onclick="showSubTodoInput(${todo.id})">+ Add Sub-ToDo</button>
+                        <div id="subtodo-input-${todo.id}" style="display: none;" class="subtodo-input-container">
+                            <input type="text" class="subtodo-input" id="subtodo-title-${todo.id}" placeholder="Sub-ToDo Title *" required>
+                            <textarea class="subtodo-textarea" id="subtodo-details-${todo.id}" placeholder="Details (optional)"></textarea>
+                            <input type="date" class="subtodo-date-input" id="subtodo-date-${todo.id}" placeholder="Reminder Date">
+                            <div class="subtodo-button-group">
+                                <button class="subtodo-add-btn" onclick="addSubTodo(${todo.id})">Add Sub-ToDo</button>
+                                <button class="subtodo-cancel-btn" onclick="hideSubTodoInput(${todo.id})">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateDataExport();
+        }
+
+        // Add new todo
+        document.getElementById('todoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newTodo = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                type: document.getElementById('type').value,
+                details: document.getElementById('details').value,
+                reminderDate: document.getElementById('reminderDate').value,
+                createdAt: new Date().toISOString(),
+                completed: false,
+                subTodos: []
+            };
+
+            todos.push(newTodo);
+            try {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            } catch(e) {
+                console.log('Could not save to localStorage');
+            }
+            
+            // Reset form
+            this.reset();
+            
+            // Re-render
+            renderTodos();
+        });
+
+        // Toggle todo completion
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                try {
+                    localStorage.setItem('todos', JSON.stringify(todos));
+                } catch(e) {
+                    console.log('Could not save to localStorage');
+                }
+                renderTodos();
+            }
+        }
+
+        // Remove todo
+        function removeTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            try {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            } catch(e) {
+                console.log('Could not save to localStorage');
+            }
+            renderTodos();
+        }
+
+        // Show sub-todo input
+        function showSubTodoInput(todoId) {
+            const inputContainer = document.getElementById(`subtodo-input-${todoId}`);
+            inputContainer.style.display = 'flex';
+            document.getElementById(`subtodo-title-${todoId}`).focus();
+        }
+
+        // Hide sub-todo input
+        function hideSubTodoInput(todoId) {
+            const inputContainer = document.getElementById(`subtodo-input-${todoId}`);
+            inputContainer.style.display = 'none';
+            document.getElementById(`subtodo-title-${todoId}`).value = '';
+            document.getElementById(`subtodo-details-${todoId}`).value = '';
+            document.getElementById(`subtodo-date-${todoId}`).value = '';
+        }
+
+        // Add sub-todo
+        function addSubTodo(todoId) {
+            const titleInput = document.getElementById(`subtodo-title-${todoId}`);
+            const detailsInput = document.getElementById(`subtodo-details-${todoId}`);
+            const dateInput = document.getElementById(`subtodo-date-${todoId}`);
+            
+            const title = titleInput.value.trim();
+            
+            if (!title) {
+                alert('Please enter a title for the Sub-ToDo');
+                return;
+            }
+            
+            const todo = todos.find(t => t.id === todoId);
+            if (todo) {
+                if (!todo.subTodos) {
+                    todo.subTodos = [];
+                }
+                todo.subTodos.push({
+                    id: Date.now(),
+                    title: title,
+                    details: detailsInput.value.trim(),
+                    reminderDate: dateInput.value,
+                    completed: false
+                });
+                
+                try {
+                    localStorage.setItem('todos', JSON.stringify(todos));
+                } catch(e) {
+                    console.log('Could not save to localStorage');
+                }
+                
+                renderTodos();
+            }
+        }
+
+        // Toggle sub-todo completion
+        function toggleSubTodo(todoId, subIndex) {
+            const todo = todos.find(t => t.id === todoId);
+            if (todo && todo.subTodos && todo.subTodos[subIndex]) {
+                todo.subTodos[subIndex].completed = !todo.subTodos[subIndex].completed;
+                try {
+                    localStorage.setItem('todos', JSON.stringify(todos));
+                } catch(e) {
+                    console.log('Could not save to localStorage');
+                }
+                renderTodos();
+            }
+        }
+
+        // Remove sub-todo
+        function removeSubTodo(todoId, subIndex) {
+            const todo = todos.find(t => t.id === todoId);
+            if (todo && todo.subTodos) {
+                todo.subTodos.splice(subIndex, 1);
+                try {
+                    localStorage.setItem('todos', JSON.stringify(todos));
+                } catch(e) {
+                    console.log('Could not save to localStorage');
+                }
+                renderTodos();
+            }
+        }
+
+        // Initial render
+        renderTodos();
+        displayLastExport();
+
+        // Set minimum date to today
+        document.getElementById('reminderDate').min = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
