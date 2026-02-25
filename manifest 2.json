@@ -1,0 +1,15 @@
+{
+  "name": "Wavelength",
+  "short_name": "Wavelength",
+  "start_url": "./podcast-app.html",
+  "display": "standalone",
+  "background_color": "#0a0f0a",
+  "theme_color": "#0a0f0a",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
